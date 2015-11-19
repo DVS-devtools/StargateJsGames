@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<widget id="com.stargatejs.test" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+  <name>game</name>
+  <description>
+        An Ionic Framework and Cordova project.
+    </description>
+  <author email="hi@stargatejs.com" href="http://stargatejs.com/">
+      Ionic Framework Team
+  </author>
+  <content src="index.html"/>
+  
+  <access origin="*"/>
+
+  <preference name="webviewbounce" value="false"/>
+  <preference name="UIWebViewBounce" value="false"/>
+  <preference name="DisallowOverscroll" value="true"/>
+  <preference name="android-minSdkVersion" value="16"/>
+  <preference name="BackupWebStorage" value="none"/>
+  <preference name="SplashScreen" value="screen"/>
+  <preference name="SplashScreenDelay" value="3000"/>
+  <feature name="StatusBar">
+    <param name="ios-package" value="CDVStatusBar" onload="true"/>
+  </feature>
+
+  <!-- Cordova base plugins -->
+  <plugin name="cordova-plugin-statusbar" spec="~1.0.1" />
+  
+  <plugin name="cordova-plugin-splashscreen" spec="~2.0.0" />
+
+  <plugin name="cordova-plugin-whitelist" spec="~1.0.0" />
+
+  <plugin name="cordova-plugin-device" spec="~1.0.0" />
+
+  <plugin name="cordova-plugin-inappbrowser" spec="~1.0.0" />
+
+  <!--  !!! REMOVE THIS ON PROD VERSION  !!! -->
+  <plugin name="cordova-plugin-console" spec="~1.0.0" />
+
+  <!-- accelleration for android >= 4.0 -->
+  <plugin name="cordova-plugin-crosswalk-webview" spec="^1.2.0" />
+
+
+  <!-- stargate plugins -->
+  <plugin name="com.buongiorno.cordova.plugin.deltadna" spec="ssh://git@bitbucket.org/ibridi/plugin-cordova-deltadna.git">
+      <variable name="GOOGLE_SENDER_ID" value="166747602795" />
+  </plugin>
+
+  <plugin name="com.buongiorno.hybrid.flurry" spec="ssh://git@bitbucket.org/ibridi/cordova-plugin-flurry.git">
+      <variable name="APIKEY_ANDROID" value="2C896DPRKXKCN42ZT7C5" />
+      <variable name="APIKEY_IOS" value="Y9F6W99FBHBVZJ8X9QPC" />
+  </plugin>
+
+  <!--
+  <plugin name="com.cranberrygame.cordova.plugin.analytics.mixpanel" spec="ssh://git@bitbucket.org/ibridi/plugin-cordova-mixpanel.git">
+      <variable name="GOOGLE_SENDER_ID" value="166747602795" />
+      <variable name="MIXPANEL_TOKEN_IOS" value="8cc32f3c5edc57868ea80a303f83b718"/>
+  </plugin>
+  -->
+
+  <!--
+  <plugin name="cordova-plugin-payment-iap" spec="ssh://git@bitbucket.org/ibridi/cordova-plugin-iap.git#master" />
+  -->
+
+  <!--
+  <plugin name="cordova-plugin-ad-chartboost" spec="ssh://git@bitbucket.org/ibridi/cordova-plugin-chartboost.git#master" />
+  -->
+
+  <!--
+  <plugin name="com.appsflyer.phonegap.plugins.appsflyer" spec="https://github.com/mircoc/AppsFlyerPhoneGap.git#cordova-android-4" />
+  -->
+
+  <!--
+  <plugin name="nl.x-services.plugins.socialsharing" spec="~4.3.19" />
+  -->
+
+  <!--
+  <plugin name="cordova-plugin-admobpro" spec="ssh://git@bitbucket.org/ibridi/cordova-admob-pro.git#master" />
+  -->
+  
+  <plugin name="com.buongiorno.hybrid.hook.installLocation" spec="ssh://git@bitbucket.org/ibridi/install-location-hook.git#master"/>
+  
+  <plugin name="com.buongiorno.hybrid.hook.csp" spec="ssh://git@bitbucket.org/ibridi/content-security-policy-hook.git#ios-fix"/>
+  
+  <plugin name="eu.micilab.cordova.ambientaudio" spec="https://github.com/mircoc/cordova-plugin-ambientaudio.git#master"/>
+
+</widget>
