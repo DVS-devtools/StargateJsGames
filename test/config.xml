@@ -81,8 +81,10 @@
   <plugin name="cordova-plugin-admobpro" spec="ssh://git@bitbucket.org/ibridi/cordova-admob-pro.git#master" />
   -->
   
+  <!-- no more working, to fix
   <plugin name="com.buongiorno.hybrid.hook.installLocation" spec="ssh://git@bitbucket.org/ibridi/install-location-hook.git#master"/>
-  
+  -->
+
   <plugin name="com.buongiorno.hybrid.hook.csp" spec="ssh://git@bitbucket.org/ibridi/content-security-policy-hook.git#ios-fix"/>
   
   <plugin name="eu.micilab.cordova.ambientaudio" spec="https://github.com/mircoc/cordova-plugin-ambientaudio.git#master"/>
