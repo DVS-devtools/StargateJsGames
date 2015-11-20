@@ -1,1 +1,0 @@
-../src/stargate.js
