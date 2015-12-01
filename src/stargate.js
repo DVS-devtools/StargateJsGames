@@ -1,4 +1,6 @@
 
+/* global AndroidStore, Q */
+
 
 (function(w){
     'use strict';
@@ -12,15 +14,18 @@
         *  1)   set options in the 'stargate.options' and 
         *        callbacks in the 'stargate.calbacks' globals
         *
-        *  2)   call stargate.init() method
+        *  2)   call stargate.init() method and wait the promise
         *
-        *  3/a) load your game assets, then call stargate.hideSplashScreen(), 
-        *        if you want to leave the application splashscreen when loading
+        *  3)   when the promise is resolved: 
+        *       
+        *       *) (if you want to leave the application splashscreen when loading)
+        *          load your game assets, then call stargate.hideSplashScreen()
         * 
-        *  3/b) call stargate.hideSplashScreen() and show your loader GUI,
-        *        if you want to show your loader to the user
+        *       *) (if you want to show your loader to the user)
+        *          call stargate.hideSplashScreen() and show your loader GUI
         * 
-        *  4)   call stargate.gameIsLoaded() when the loader if finished and user is in main menu
+        *  4)   call stargate.gameIsLoaded() when the loader if finished and
+        *        user is in main menu
         * 
         */
 
@@ -82,7 +87,7 @@
         s.options.iosItunesAppId = '';
         s.options.heyzapEnabled = false;
         s.options.heyzapPublisherId = '';
-        s.options.cordovaHideStatusBar = true;
+        s.options.cordovaHideStatusBar = false;
 
         // options are sealed after init(), we save them here, so inside stargate use this variable
         var savedOptions = {};
@@ -92,9 +97,21 @@
         //  to be set before init()
         s.callbacks = {};
         s.callbacks.pushNotification = function(data) {err("pushNotification callback not defined");};
+        /**
+        * stargate.callbacks.androidBackButton: <Function>: boolean function()
+        *  callback called when android back button is pressed
+        *  if the callback return [true] then application is closed
+        */
         s.callbacks.androidBackButton = null;
         s.callbacks.engageSuccess = function(data) {err("engageSuccess callback not defined");};        
-        s.callbacks.engageFailure = null;        
+        s.callbacks.engageFailure = null;
+        s.callbacks.iap = {};
+        s.callbacks.iap.purchaseSuccess = null;
+        s.callbacks.iap.purchaseFail = null;
+        s.callbacks.iap.listingSuccess = null;
+        s.callbacks.iap.listingFail = null;
+        s.callbacks.iap.restoreSuccess = null;
+        s.callbacks.iap.restoreFail = null;
 
         //
         // call back handlers
@@ -147,6 +164,44 @@
                 w.stargate.callbacks.engageFailure(errorResponse);
             }
         };
+
+        var callIapPurchaseSuccessCallback = function(product, result) {
+            log("[IAP] purchase Success for product: "+product, result);
+            if (typeof w.stargate.callbacks.iap.purchaseSuccess === 'function') {
+                w.stargate.callbacks.iap.purchaseSuccess(product, result);
+            }
+        }
+        var callIapPurchaseFailCallback = function(product, error) {
+            err("[IAP] purchase Fail for product: "+product, error);
+            if (typeof w.stargate.callbacks.iap.purchaseFail === 'function') {
+                w.stargate.callbacks.iap.purchaseFail(product, error);
+            }
+        }
+        var callIapListingSuccessCallback = function() {
+            log("[IAP] listing Success");
+            if (typeof w.stargate.callbacks.iap.listingSuccess === 'function') {
+                w.stargate.callbacks.iap.listingSuccess();
+            }
+        }
+        var callIapListingFailCallback = function() {
+            err("[IAP] listing Fail");
+            if (typeof w.stargate.callbacks.iap.listingFail === 'function') {
+                w.stargate.callbacks.iap.listingFail();
+            }
+        }
+        var callIapRestoreSuccessCallback = function() {
+            log("[IAP] restore Success");
+            if (typeof w.stargate.callbacks.iap.restoreSuccess === 'function') {
+                w.stargate.callbacks.iap.restoreSuccess();
+            }
+        }
+        var callIapRestoreFailCallback = function() {
+            err("[IAP] restore Fail");
+            if (typeof w.stargate.callbacks.iap.restoreFail === 'function') {
+                w.stargate.callbacks.iap.restoreFail();
+            }
+        }
+        
 
         var initDevice = function() {
             if (typeof w.device === 'undefined') {
@@ -299,36 +354,32 @@
         s.analitics.addTransactionProperty = function(propertyName, propertyValue) {
             analiticsTransactionProperties[propertyName] = propertyValue;
         };
-        s.analitics.recordTransaction = function() {
-            
+        var recordTransaction = function(productId) {
             
             if (!isRunningOnCordova()) {
-                return log("[analitics.recordTransaction] not available outside device");
+                return log("[recordTransaction] not available outside device");
             }
 
-            // -----
-            // ----- FIXME !!! CONVERT FROM CONTRUCT2 CODE -----
-            // -----
-
-            if (!this.store) {
-                throw new Error("Store Undefined: missing configuration?");
+            if (!iap.store) {
+                return err("Store Undefined: missing configuration?");
             }
+
             // last succesfully bought product with stargate iap
             var transaction = {
-                productId: this.IAP_productId,
-                productAmountCent: this.store.getProductAmountCent(this.IAP_productId),
-                productCurrency: this.store.getProductCurrency(this.IAP_productId),
-                productName: this.store.getProductName(this.IAP_productId),
-                id: this.IAP_lastTransactionOrderId,
-                type: this.store.getProductType(this.IAP_productId)
+                productId: productId,
+                productAmountCent: iap.store.getProductAmountCent(productId),
+                productCurrency: iap.store.getProductCurrency(productId),
+                productName: iap.store.getProductName(productId),
+                id: iap.lastTransactionOrderId,
+                type: this.store.getProductType(productId)
             };
             
             if(savedOptions.deltadnaEnabled){
                 var revenueValidationEnabled = true;
-                console.log("[Analitics_RecordTransaction] deltaDNA ", transaction);
+                log("[recordTransaction] deltaDNA ", transaction);
 
-                if (typeof window.deltadna == 'undefined') {
-                    throw new Error("Deltadna Undefined: missing cordova plugin?");
+                if (typeof w.deltadna == 'undefined') {
+                    return err("Deltadna Undefined: missing cordova plugin?");
                 }
                 var transactionDeltadna = {
                     "transactionName": transaction.productName,
@@ -354,20 +405,21 @@
                 for (var attrname in analiticsTransactionProperties) {
                     transactionDeltadna[attrname] = analiticsTransactionProperties[attrname];
                 }
+
                 if (revenueValidationEnabled) {
                     transactionDeltadna["transactionServer"] = "UNKNOWN";
-                    transactionDeltadna["transactionReceipt"] = this.IAP_lastTransactionReceipt;
+                    transactionDeltadna["transactionReceipt"] = iap.lastTransactionReceipt;
                     if (isRunningOnIos()) {
                         transactionDeltadna["transactionServer"] = "APPLE";
                     }
                     if (isRunningOnAndroid()) {
                         transactionDeltadna["transactionServer"] = "GOOGLE";
-                        transactionDeltadna["transactionReceipt"] = this.IAP_lastTransactionResult.originalJson;
-                        transactionDeltadna["transactionReceiptSignature"] = this.IAP_lastTransactionSignature;
+                        transactionDeltadna["transactionReceipt"] = iap.lastTransactionResult.originalJson;
+                        transactionDeltadna["transactionReceiptSignature"] = iap.lastTransactionSignature;
                     }
                 }
 
-                log("[analitics.recordTransaction] DeltaDNA recordTransaction sending to native: ", transactionDeltadna);
+                log("[recordTransaction] DeltaDNA recordTransaction sending to native: ", transactionDeltadna);
 
                 w.deltadna.recordTransaction(
                     transactionDeltadna,
@@ -382,11 +434,11 @@
             }
             if(savedOptions.mixpanelEnabled){
                 if (typeof w.mixpanel == 'undefined') {
-                    throw new Error("Mixpanel Undefined: missing cordova plugin?");
+                    return err("Mixpanel Undefined: missing cordova plugin?");
                 }
                 var timestamp = new Date().toISOString().substring(0, 19);
                 var amount = Math.round(transaction.productAmountCent * 100) / 100;
-                console.log("[Analitics_RecordTransaction] mixpanel amount: "+amount+", ts: "+timestamp);
+                log("[recordTransaction] mixpanel amount: "+amount+", ts: "+timestamp);
                 w.mixpanel.trackCharge(
                     amount,
                     {"$time":timestamp},
@@ -400,19 +452,17 @@
             }
             analiticsTransactionProperties = {};
 
-            // -----------------------------------------
-            // -------------- END FIXME ----------------
-            // -----------------------------------------
         };
         // -----------------------------
         //       ANALITICS END
         // -----------------------------
+
         var splashScreenHideCalled = false;
         s.hideSplashScreen = function() {
             if (! isRunningOnCordova())
                 return;
 
-            if (typeof window["navigator"] == 'undefined' || typeof window["navigator"]["splashscreen"] == 'undefined')
+            if (typeof w.navigator == 'undefined' || typeof w.navigator.splashscreen == 'undefined')
                 return err("splashscreen undefined, missing cordova plugin ?");
             
             splashScreenHideCalled = true;
@@ -422,6 +472,132 @@
         // -----------------------------
         //         IAP START
         // -----------------------------
+        // FIXME: add iap code from construct 2 plugin
+        var iap = {};
+        iap.store = null;
+        iap.lastTransactionOrderId = "";
+        iap.lastTransactionReceipt = "";
+        iap.lastTransactionSignature = "";
+        iap.lastTransactionResult = {};
+
+        var initIap = function() {
+
+            if (!savedOptions.iapEnabled) {
+                return;
+            }
+            if (!!!savedOptions.iapAndroidLicenseKey) {
+                throw new Error("Iap Android License Key undefined");
+            }
+
+            if (typeof w.iap == 'undefined') {
+                throw new Error("Iap Undefined, missing cordova plugin ?");
+            }
+
+            if (isRunningOnAndroid()) {
+                iap.store = new AndroidStore(savedOptions.iapAndroidLicenseKey, 'android');
+            }
+            else if (isRunningOnIos()) {
+                iap.store = new AndroidStore(savedOptions.iapAndroidLicenseKey, 'ios');
+            }
+            else {
+                throw new Error("Platform not supported!");
+            }
+            
+            iap.store.onpurchasesuccess = function(product, result) {
+                
+                iap.lastTransactionResult = result;
+                iap.lastTransactionOrderId = result.orderId;
+                iap.lastTransactionReceipt = result.receipt;
+                if (result.signature) {
+                    iap.lastTransactionSignature = result.signature;
+                } else {
+                    iap.lastTransactionSignature = "";
+                }
+
+                // record the transaction on analitics services
+                recordTransaction(product);
+
+                callIapPurchaseSuccessCallback(product, result);
+            };
+            
+            iap.store.onpurchasefail = function(product, error) {
+                callIapPurchaseFailCallback(product, error);
+            };
+            
+            iap.store.onstorelistingsuccess = function () {
+                callIapListingSuccessCallback();
+            };
+            
+            iap.store.onstorelistingfail = function () {
+                callIapListingFailCallback();
+            };
+            iap.store.onrestorepurchasessuccess = function (tag) {
+                callIapRestoreSuccessCallback();
+            };
+            
+            iap.store.onrestorepurchasesfail = function (tag) {
+                callIapRestoreFailCallback();
+            };
+        };
+
+        s.iap = {};
+
+        /**
+        *    addProductId(productId): 
+        *       add every product you want to use later
+        *       you have to call this before requestStoreListing
+        */
+        s.iap.addProductId = function(productIds) {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return iap.store && iap.store.addProductIds(productIds);
+        };
+
+        /**
+        *    requestStoreListing(): 
+        *       get information from the store for added product id
+        *       on finish success or fail it will call the saved callbacks
+        */
+        s.iap.requestStoreListing = function() {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return iap.store && iap.store.requestStoreListing();
+        };
+
+        /**
+        *    purchaseProductId(productId): 
+        *       purchase a productId
+        *       on finish success or fail it will call the saved callbacks
+        */
+        s.iap.purchaseProductId = function(productId) {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return iap.store && iap.store.purchaseProduct(productId);
+        };
+
+        /**
+        *    restorePurchases(): 
+        *       restore purchases already done by the user on this application
+        *       on finish success or fail it will call the saved callbacks
+        */
+        s.iap.restorePurchases = function() {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return iap.store && iap.store.restorePurchases();
+        };
+
+        s.iap.getProductName = function(productId) {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return (iap.store ? iap.store.getProductName(productId) : "");
+        };
+        s.iap.getProductPrice = function(productId) {
+            if (! isRunningOnCordova()) return;
+            if (typeof w.iap == 'undefined') return err("iap undefined, missing cordova plugin ?");
+            return (iap.store ? iap.store.getProductFormattedPrice(productId) : "");
+        };
+
+
 
         // -----------------------------
         //          IAP END
@@ -429,9 +605,9 @@
         
         /**
         *    
-        * gameIsLoaded() call it when the game have finished loading, 
-        *                it will enable callbacks that need the User Interface
-        *                to be ready, like stargate.callbacks.pushNotification
+        * gameIsLoaded(): call it when the game have finished loading, 
+        *                 it will enable callbacks that need the User Interface
+        *                 to be ready, like stargate.callbacks.pushNotification
         *    
         */
         s.gameIsLoaded = function() {
@@ -458,6 +634,7 @@
         };
 
         var initDone = false;
+        var initDeferred = null;
         var initDeviceDone = false;
 
         var onDeviceReady = function () {            
@@ -466,21 +643,28 @@
             initDeltadna();
 
             initDeviceDone = true;
+            initDeferred.resolve("Init Device Done");
         };
 
         /**
         *    
-        * init() call it after setting options, 
-        *        after init() option will not be
-        *        read anymore
+        * init()  
+        * @description: call it after setting options, 
+        *               after init() option will not be
+        *               read anymore
+        *
+        * @return       <Promise> 
         *    
         */
         s.init = function () {
+            initDeferred = Q.defer();
+
             if (initDone) {
-                throw new Error("Init already done");
+                initDeferred.reject(new Error("Init already called"));
             }
             if (!isRunningOnCordova()) {
-                return log("Not running on Cordova");
+                initDeferred.resolve("Not running on Cordova");
+                return initDeferred.promise;
             }
 
             // save options internally, we don't want to let them change after init
@@ -494,7 +678,7 @@
             //
 
             initDone = true;
-            return true;
+            return initDeferred.promise;
         };
 
         return s;
