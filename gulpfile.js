@@ -2,18 +2,23 @@
 var testPlatform = 'android';
 
 var gulp = require('gulp'),
+	fs = require('fs'),
 	mainBowerFiles = require('main-bower-files'),
     jshint = require('gulp-jshint'),
     uglify = require('gulp-uglify'),
     rename = require('gulp-rename'),
     concat = require('gulp-concat'),
+    addsrc = require('gulp-add-src'),
     notify = require('gulp-notify'),
+    footer = require('gulp-footer'),
+ 	header = require('gulp-header'),
     del = require('del'),
     webserver = require('gulp-webserver'),
     plumber = require('gulp-plumber'),
     watch = require('gulp-watch'),
     argv = require('minimist')(process.argv.slice(2)),
     karma = require('karma'),
+    buildConfig = require('./config/build.config'),
   	karmaConf = require('./config/karma.conf.js');
 
 var cordova_lib = require('cordova-lib'),
@@ -28,23 +33,25 @@ var cordovaTestProjectDir = path.join(__dirname, 'test');
 gulp.task('build:bower', function() {
 	// take all bower includes and concatenate them,
 	// in a file to be included before others
-	// so name it with _ to be first in natural order
-	// when included by task build:src
 	return gulp.src(mainBowerFiles())
-		.pipe(concat('_includes.bower.js'))
-		.pipe(gulp.dest('src/'));
+		.pipe(concat('includes.bower.js'))
+		.pipe(gulp.dest('dest/'));
 });
 
 
 gulp.task('build:src', ['build:bower'], function() {
 	return gulp.src('src/**/*.js')
+		.pipe(concat('stargate.js'))
+		.pipe(header(buildConfig.closureStart))
+		.pipe(footer(buildConfig.closureEnd))
 	    .pipe(jshint('.jshintrc'))
 	    .pipe(jshint.reporter('jshint-stylish'))
-	    .pipe(concat('stargate.js'))
+	    .pipe(header(fs.readFileSync('./dest/includes.bower.js', 'utf8')))
 	    .pipe(gulp.dest('dist/'))
 	    .pipe(gulp.dest('test/www/js/'))
 	    .pipe(rename({suffix: '.min'}))
 	    .pipe(uglify())
+	    .pipe(header(buildConfig.banner))
 	    .pipe(gulp.dest('dist/'))
 	    .pipe(notify({ title: "Build Success", message: 'Build StargateJS completed' }));
 });
@@ -59,6 +66,7 @@ function jsHintErrorAlert(error){
 	console.log(error.toString());//Prints Error to Console
 	this.emit("end"); //End function
 };
+// FIXME old build:src configuration
 gulp.task('build:src:checkjs', ['build:bower'], function() {
 	return gulp.src('src/**/*.js')
 		.pipe(plumber({errorHandler: jsHintErrorAlert}))
@@ -123,7 +131,7 @@ gulp.task('run', ['build:src'], function(cb) {
     return cdv.run({platforms:[testPlatform], options:['--device']});
 });
 
-gulp.task('karma', function (done) {
+gulp.task('karma', ['build'], function (done) {
 	
 	karmaConf.singleRun = true;
 	argv.browsers && (karmaConf.browsers = argv.browsers.trim().split(','));
