@@ -1,7 +1,7 @@
 
 module.exports = {
     files: [
-        'src/**/*.js',
+        'dist/stargate.js',
         'spec/*.js'
     ],
 
