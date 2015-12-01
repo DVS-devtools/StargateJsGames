@@ -19,5 +19,9 @@ module.exports = {
 		'else{\nthrow new Error("Stargate already defined.");\n}\n\n' +
 		'\n})(window);',
 	
-	version: pkg.version
+	version: pkg.version,
+
+	dist: 'dist/',
+	bowerAllIncludes: 'includes.bower.js',
+	distFile: 'stargate.js'
 };

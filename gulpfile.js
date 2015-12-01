@@ -10,6 +10,7 @@ var gulp = require('gulp'),
     concat = require('gulp-concat'),
     addsrc = require('gulp-add-src'),
     notify = require('gulp-notify'),
+    notifier = require('node-notifier'),
     footer = require('gulp-footer'),
  	header = require('gulp-header'),
     del = require('del'),
@@ -34,27 +35,31 @@ gulp.task('build:bower', function() {
 	// take all bower includes and concatenate them,
 	// in a file to be included before others
 	return gulp.src(mainBowerFiles())
-		.pipe(concat('includes.bower.js'))
-		.pipe(gulp.dest('dest/'));
+		.pipe(concat(buildConfig.bowerAllIncludes))
+		.pipe(gulp.dest(buildConfig.dist));
 });
 
 
-gulp.task('build:src', ['build:bower'], function() {
+gulp.task('build:src:nonotify', ['build:bower'], function() {
 	return gulp.src('src/**/*.js')
-		.pipe(concat('stargate.js'))
+		.pipe(concat(buildConfig.distFile))
 		.pipe(header(buildConfig.closureStart))
 		.pipe(footer(buildConfig.closureEnd))
 	    .pipe(jshint('.jshintrc'))
 	    .pipe(jshint.reporter('jshint-stylish'))
-	    .pipe(header(fs.readFileSync('./dest/includes.bower.js', 'utf8')))
-	    .pipe(gulp.dest('dist/'))
+	    .pipe(header(fs.readFileSync(buildConfig.dist + buildConfig.bowerAllIncludes, 'utf8')))
+	    .pipe(gulp.dest(buildConfig.dist))
 	    .pipe(gulp.dest('test/www/js/'))
 	    .pipe(rename({suffix: '.min'}))
 	    .pipe(uglify())
 	    .pipe(header(buildConfig.banner))
-	    .pipe(gulp.dest('dist/'))
-	    .pipe(notify({ title: "Build Success", message: 'Build StargateJS completed' }));
+	    .pipe(gulp.dest(buildConfig.dist));
 });
+
+gulp.task('build:src', ['build:src:nonotify'], function() {
+	notifier.notify({ title: "Build Success", message: 'Build StargateJS completed' });
+});
+
 
 // alternative build:src that lint source and fail with a message if it's not valid
 function jsHintErrorAlert(error){
@@ -73,12 +78,12 @@ gulp.task('build:src:checkjs', ['build:bower'], function() {
 	    .pipe(jshint('.jshintrc'))
 	    .pipe(jshint.reporter('jshint-stylish'))
 	    .pipe(jshint.reporter('fail'))
-	    .pipe(concat('stargate.js'))
-	    .pipe(gulp.dest('dist/'))
+	    .pipe(concat(buildConfig.distFile))
+	    .pipe(gulp.dest(buildConfig.dist))
 	    .pipe(gulp.dest('test/www/js/'))
 	    .pipe(rename({suffix: '.min'}))
 	    .pipe(uglify())
-	    .pipe(gulp.dest('dist/'))
+	    .pipe(gulp.dest(buildConfig.dist))
 	    .pipe(notify({ title: "Build Success", message: 'Build StargateJS completed' }));
 });
 
@@ -108,8 +113,12 @@ gulp.task('clean:cordova', function () {
 	});
 });
 
-gulp.task('lint:jshint', ['build:bower'], function() {
+gulp.task('lint:jshint', function() {
 	return gulp.src('src/**/*.js')
+		.pipe(concat(buildConfig.distFile + '.lint.tmp.js'))
+		.pipe(header(buildConfig.closureStart))
+		.pipe(footer(buildConfig.closureEnd))
+		.pipe(gulp.dest(buildConfig.dist))
 	    .pipe(jshint('.jshintrc'))
 	    .pipe(jshint.reporter('jshint-stylish'))
 	    .pipe(jshint.reporter('fail'));
