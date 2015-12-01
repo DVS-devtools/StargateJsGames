@@ -28,6 +28,8 @@
     "del": "^2.1.0",
     "gulp": "^3.9.0",
     "gulp-concat": "^2.6.0",
+    "gulp-footer": "^1.0.5",
+    "gulp-header": "^1.7.1",
     "gulp-jshint": "^2.0.0",
     "gulp-livereload": "^3.8.1",
     "gulp-notify": "^2.2.0",
