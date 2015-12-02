@@ -60,8 +60,8 @@ var initIap = function() {
     iap.store.onstorelistingfail = function() {
         callIapListingFailCallback();
     };
-    iap.store.onrestorepurchasessuccess = function() {
-        callIapRestoreSuccessCallback();
+    iap.store.onrestorepurchasessuccess = function(existingPurchases) {
+        callIapRestoreSuccessCallback(existingPurchases);
     };
     
     iap.store.onrestorepurchasesfail = function() {

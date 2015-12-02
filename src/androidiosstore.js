@@ -105,7 +105,7 @@ AndroidIosStore.prototype.restorePurchases = function ()
 		}
 		
 		if (self.onrestorepurchasessuccess) {
-			self.onrestorepurchasessuccess();			
+			self.onrestorepurchasessuccess(self.existing_purchases);			
 		}
 	}, 
 	function (error)

@@ -181,10 +181,10 @@ var callIapListingFailCallback = function() {
         w.stargate.callbacks.iap.listingFail();
     }
 };
-var callIapRestoreSuccessCallback = function() {
+var callIapRestoreSuccessCallback = function(existingPurchases) {
     log("[IAP] restore Success");
     if (typeof w.stargate.callbacks.iap.restoreSuccess === 'function') {
-        w.stargate.callbacks.iap.restoreSuccess();
+        w.stargate.callbacks.iap.restoreSuccess(existingPurchases);
     }
 };
 var callIapRestoreFailCallback = function() {
