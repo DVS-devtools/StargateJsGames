@@ -27,7 +27,7 @@ var cordova_lib = require('cordova-lib'),
 var cdv = cordova_lib.cordova.raw;
 
 // path of cordova test project
-var cordovaTestProjectDir = path.join(__dirname, 'test');
+var cordovaTestProjectDir = path.join(__dirname, 'demo');
 
 
 gulp.task('build:bower', function() {
@@ -79,17 +79,17 @@ gulp.task('build:src:checkjs', ['build:bower'], function() {
 	    .pipe(jshint.reporter('fail'))
 	    .pipe(concat(buildConfig.distFile))
 	    .pipe(gulp.dest(buildConfig.dist))
-	    .pipe(gulp.dest('test/www/js/'))
+	    .pipe(gulp.dest('demo/www/js/'))
 	    .pipe(rename({suffix: '.min'}))
 	    .pipe(uglify())
 	    .pipe(gulp.dest(buildConfig.dist))
 	    .pipe(notify({ title: "Build Success", message: 'Build StargateJS completed' }));
 });
 
-gulp.task('serve', function() {
-  gulp.src('test/www/')
+gulp.task('demo:serve', function() {
+  gulp.src('demo/www/')
     .pipe(webserver({
-    	//path: 'test/www/',
+    	//path: 'demo/www/',
       	livereload: true,
       	fallback: 'index.html',
       	directoryListing: false,
@@ -97,11 +97,11 @@ gulp.task('serve', function() {
     }));
 });
 
-gulp.task('clean:cordova', function () {
+gulp.task('demo:clean', function () {
 	// delete platforms and plugins
 	return del([
-		'test/platforms/',
-		'test/plugins/'
+		'demo/platforms/',
+		'demo/plugins/'
 	])
 	.then(function() {
 		return process.chdir(cordovaTestProjectDir);
@@ -131,10 +131,10 @@ gulp.task('build', ['build:src'] );
 gulp.task('lint', ['lint:jshint'] );
 gulp.task('test', ['karma'] );
 
-gulp.task('clean', ['clean:cordova'] );
+gulp.task('clean', ['demo:clean'] );
 
 
-gulp.task('run', ['build:src'], function(cb) {
+gulp.task('demo:run', ['build:src'], function(cb) {
     process.chdir(cordovaTestProjectDir);
     return cdv.run({platforms:[testPlatform], options:['--device']});
 });
