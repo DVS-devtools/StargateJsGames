@@ -6,3 +6,9 @@ before_install:
   - bower install
 node_js:
   - "0.10"
+notifications:
+  email:
+    recipients:
+      - stargate@buongiorno.com
+    #on_success: [always|never|change] # default: change
+    #on_failure: [always|never|change] # default: always
