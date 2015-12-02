@@ -48,7 +48,7 @@ gulp.task('build:src:nonotify', ['build:bower'], function() {
 	    .pipe(jshint.reporter('jshint-stylish'))
 	    .pipe(header(fs.readFileSync(buildConfig.dist + buildConfig.bowerAllIncludes, 'utf8')))
 	    .pipe(gulp.dest(buildConfig.dist))
-	    .pipe(gulp.dest('test/www/js/'))
+	    .pipe(gulp.dest('demo/www/js/'))
 	    .pipe(rename({suffix: '.min'}))
 	    .pipe(uglify())
 	    .pipe(header(buildConfig.banner))
