@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/ibridi/stargatejs-games.git"
+    "url": "git+https://github.com/BuongiornoMIP/StargateJsGames.git"
   },
   "keywords": [
     "cordova",
@@ -19,9 +19,9 @@
     "html5",
     "games"
   ],
-  "author": "Mirco Cipriani",
+  "author": "Buongiorno",
   "license": "MIT",
-  "homepage": "https://bitbucket.org/ibridi/stargatejs-games#readme",
+  "homepage": "https://github.com/BuongiornoMIP/StargateJsGames#stargatejs",
   "devDependencies": {
     "bower": "^1.6.5",
     "cordova-lib": "^5.4.0",
@@ -39,6 +39,7 @@
     "gulp-util": "^3.0.7",
     "gulp-watch": "^4.3.5",
     "gulp-webserver": "^0.9.1",
+    "istanbul": "^0.4.1",
     "jasmine-core": "^2.3.4",
     "jasmine-reporters": "^2.0.7",
     "jshint": "^2.9.1-rc1",
