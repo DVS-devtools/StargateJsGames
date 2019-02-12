@@ -1,7 +1,8 @@
-[![Travis](http://img.shields.io/travis/BuongiornoMIP/StargateJsGames.svg?branch=master&style=flat)](https://travis-ci.org/BuongiornoMIP/StargateJsGames)
-
-
 # StargateJS 
+
+## [!!!] This repository has been deprecated
+
+[![Travis](http://img.shields.io/travis/BuongiornoMIP/StargateJsGames.svg?branch=master&style=flat)](https://travis-ci.org/BuongiornoMIP/StargateJsGames)
 
 StargateJS is a javascript library that enable game developer to use native device functionality of several external services for
 
